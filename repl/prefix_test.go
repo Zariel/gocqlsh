@@ -118,7 +118,7 @@ func TestComplete(t *testing.T) {
 		{
 			"h",
 			[]string{"horse"},
-			[]string{"horse"},
+			[]string{"orse"},
 		},
 		{
 			"missing",
@@ -128,17 +128,17 @@ func TestComplete(t *testing.T) {
 		{
 			"ho",
 			[]string{"house", "horse"},
-			[]string{"horse", "house"},
+			[]string{"rse", "use"},
 		},
 		{
 			"ho",
 			[]string{"house", "test"},
-			[]string{"house"},
+			[]string{"use"},
 		},
 		{
 			"horses",
 			[]string{"house", "horse", "horses"},
-			[]string{"horses"},
+			[]string{""},
 		},
 	}
 

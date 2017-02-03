@@ -131,10 +131,16 @@ func (p trieNode) complete(prefix, term string) []string {
 }
 
 func (p trieNode) Complete(term string) []string {
-	return p.complete(p.prefix, term)
+	// TODO: this is silly, do this in 1 pass no need to strip the prefix of the results
+	res := p.complete(p.prefix, term)
+	for i, complete := range res {
+		res[i] = complete[commonPrefixLen(term, complete):]
+	}
+	return res
 }
 
 func prefixComplete(term string, items ...string) []string {
+	// TODO: this needs to be able to handle case insensitive matching, ie, given IN return INSERT or insert
 	var p trieNode
 	for _, item := range items {
 		p.insert(item)
