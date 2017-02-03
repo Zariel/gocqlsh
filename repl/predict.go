@@ -201,5 +201,5 @@ func (c *cqlCompleter) queryParser(q string) []string {
 		return c.completeInsert(l)
 	}
 
-	return []string{"POTATO"}
+	return prefixComplete(keyword.Val, "insert", "select", "update", "delete")
 }
