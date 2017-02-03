@@ -1,7 +1,5 @@
 package repl
 
-import "log"
-
 func commonPrefixLen(a, b string) int {
 	n := len(a)
 	if len(b) < n {
@@ -17,6 +15,9 @@ func commonPrefixLen(a, b string) int {
 	return n
 }
 
+// all terms are inserted as term$ to indicate the full term
+const terminal = "$"
+
 type trieNode struct {
 	prefix   string
 	children []*trieNode
@@ -25,6 +26,8 @@ type trieNode struct {
 func (p *trieNode) insert(item string) {
 	if p.prefix == terminal {
 		panic("can not insert value into terminal")
+	} else if item == "" {
+		panic("can not insert empty term")
 	}
 
 	if item == terminal {
@@ -94,52 +97,47 @@ func (p trieNode) contains(item string) bool {
 	return false
 }
 
-func (p trieNode) all(partial string) []string {
-	// FIME
-	var res []string
+func (p trieNode) all(prefix string, res []string) []string {
 	for _, c := range p.children {
 		if c.prefix == terminal {
-			res = append(res, partial)
+			// prefix is a complete term
+			res = append(res, prefix)
 		} else {
-			res = append(res, c.all(partial+c.prefix)...)
+			res = c.all(prefix+c.prefix, res)
 		}
 	}
 
 	return res
 }
 
-func (p trieNode) complete(prefix, s string) []string {
-	if s == "" {
-		return p.all(prefix)
-	}
-
-	for _, node := range p.children {
-		plen := commonPrefixLen(s, node.prefix)
-		if plen > 0 {
-			log.Println(node)
-		}
-	}
-	return nil
+func (p trieNode) All() []string {
+	return p.all("", nil)
 }
 
-func (p trieNode) Complete(s string) []string {
+func (p trieNode) complete(prefix, term string) []string {
+	// empty term, we have recursed down the trie a bit and run out of term, all sub terms are possible from here
+	if term == "" {
+		return p.all(prefix, nil)
+	}
+
 	for _, node := range p.children {
-		plen := commonPrefixLen(s, node.prefix)
+		plen := commonPrefixLen(term, node.prefix)
 		if plen > 0 {
-			return p.complete("", s[plen:])
+			return node.complete(prefix+node.prefix, term[plen:])
 		}
 	}
 
 	return nil
 }
 
-const terminal = "$"
+func (p trieNode) Complete(term string) []string {
+	return p.complete(p.prefix, term)
+}
 
-func prefixComplete(items ...string) trieNode {
+func prefixComplete(term string, items ...string) []string {
 	var p trieNode
 	for _, item := range items {
-		log.Println("inserting:", item)
 		p.insert(item)
 	}
-	return p
+	return p.Complete(term)
 }

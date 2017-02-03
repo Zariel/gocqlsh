@@ -50,7 +50,6 @@ func TestPrefixCompleter_Insert(t *testing.T) {
 	} else if p.children[1].prefix != "horse" {
 		t.Fatalf("expected prefix to be %q got %q", "horse", p.children[1].prefix)
 	} else {
-		// TODO
 		child := p.children[1]
 		if len(child.children) != 2 {
 			t.Fatalf("expected 2 children got %d", len(child.children))
@@ -102,10 +101,60 @@ func TestPrefixCompleter_All(t *testing.T) {
 		p.insert(v)
 	}
 
-	all := p.all("")
+	all := p.All()
 	sort.Strings(all)
 
 	if !reflect.DeepEqual(all, values) {
 		t.Fatalf("expected %q got %q", values, all)
+	}
+}
+
+func TestComplete(t *testing.T) {
+	tests := []struct {
+		item         string
+		trieContents []string
+		result       []string
+	}{
+		{
+			"h",
+			[]string{"horse"},
+			[]string{"horse"},
+		},
+		{
+			"missing",
+			[]string{"horse"},
+			nil,
+		},
+		{
+			"ho",
+			[]string{"house", "horse"},
+			[]string{"horse", "house"},
+		},
+		{
+			"ho",
+			[]string{"house", "test"},
+			[]string{"house"},
+		},
+		{
+			"horses",
+			[]string{"house", "horse", "horses"},
+			[]string{"horses"},
+		},
+	}
+
+	for _, test := range tests {
+		sort.Strings(test.result)
+		t.Run(test.item, func(t *testing.T) {
+			var p trieNode
+			for _, s := range test.trieContents {
+				p.insert(s)
+			}
+
+			result := p.Complete(test.item)
+			sort.Strings(result)
+			if !reflect.DeepEqual(result, test.result) {
+				t.Fatalf("expected predictions %q got %q", test.result, result)
+			}
+		})
 	}
 }
