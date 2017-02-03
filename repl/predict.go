@@ -30,7 +30,7 @@ func (c *cqlCompleter) Do(line []rune, pos int) (newLine [][]rune, offset int) {
 		runes[i] = []rune(line)
 	}
 
-	return runes, len(line)
+	return runes, 0
 }
 
 func (c *cqlCompleter) GetName() []rune {
