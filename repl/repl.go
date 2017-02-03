@@ -79,10 +79,10 @@ func (c *CQL) executeQuery(query string) error {
 		return err
 	}
 
+	line := make([]string, len(columns))
 	for _, row := range rows {
-		var line []string
-		for _, col := range columns {
-			line = append(line, fmt.Sprintf("%v", row[col]))
+		for i, col := range columns {
+			line[i] = fmt.Sprintf("%v", row[col])
 		}
 		table.Append(line)
 	}
