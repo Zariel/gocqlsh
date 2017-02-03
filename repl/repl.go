@@ -28,6 +28,13 @@ func New(db *gocql.Session, r *readline.Instance) *CQL {
 	}
 }
 
+func (c *CQL) err(err error) {
+	// TODO: imrpove error display
+	if _, err := fmt.Fprintf(c.r, "error: %v\n", aurora.Red(err)); err != nil {
+		panic(err)
+	}
+}
+
 func (c *CQL) Run() error {
 	clusterInfo, err := c.meta.ClusterMeta()
 	if err != nil {
@@ -50,10 +57,7 @@ func (c *CQL) Run() error {
 		}
 
 		if err := c.exec(line); err != nil {
-			fmt.Printf("line=%q\n", line)
-
-			// TODO: dont just fail because bad queries should be written out to the repl
-			return err
+			c.err(err)
 		}
 
 	}
@@ -89,7 +93,9 @@ func (c *CQL) executeQuery(query string) error {
 
 	table.Render()
 
-	return nil
+	// TODO: store page state and query here so that we can let the user page through results with space
+
+	return iter.Close()
 }
 
 func (c *CQL) exec(line string) error {
