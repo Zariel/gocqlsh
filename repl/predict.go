@@ -82,7 +82,7 @@ func (c *completer) Expect(token string) {
 	c.Next()
 
 	if c.last.Val != token {
-		c.items = append(c.items, token)
+		c.items = append(c.items, token[commonPrefixLen(token, c.last.Val):])
 	}
 }
 
