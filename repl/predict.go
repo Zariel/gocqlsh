@@ -190,7 +190,6 @@ func (c *cqlCompleter) queryParser(q string) []string {
 	l := lexer.Lex(q)
 	keyword := l.ItemNoWS()
 	if keyword.Typ != lexer.ItemKeyword {
-		log.Printf("%v", keyword)
 		return nil
 	}
 
