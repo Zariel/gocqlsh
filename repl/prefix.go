@@ -51,11 +51,7 @@ func (p *trieNode) insert(item string) {
 		// TODO: handle split
 		plen := commonPrefixLen(node.prefix, item)
 		if plen > 0 && node.prefix != terminal {
-			if plen == len(item) {
-				// overlap, insert a terminal
-				node.insert(terminal)
-			} else if plen == len(node.prefix) {
-				// log.Printf("overlapping item=%q node=%q", item, node.prefix)
+			if plen == len(node.prefix) {
 				// have some overlap by len(item) > len(node.prefix)
 				node.insert(item[plen:])
 			} else {
@@ -68,7 +64,12 @@ func (p *trieNode) insert(item string) {
 				newNode := &trieNode{prefix: suffix, children: children}
 
 				node.children = []*trieNode{newNode}
-				node.insert(item[plen:])
+
+				if toInsert := item[plen:]; toInsert == "" {
+					node.insert(terminal)
+				} else {
+					node.insert(item[plen:])
+				}
 			}
 
 			return
@@ -84,7 +85,7 @@ func (p trieNode) contains(item string) bool {
 	// TODO: move this to a root trie node structure, then just
 	// search for a suffix
 	for _, c := range p.children {
-		if c.prefix == terminal {
+		if c.prefix == terminal && item == "" {
 			return true
 		}
 

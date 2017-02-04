@@ -93,7 +93,7 @@ func TestPrefixCompleter_ContainsInsert(t *testing.T) {
 }
 
 func TestPrefixCompleter_All(t *testing.T) {
-	values := []string{"house", "horse", "horses", "him", "his", "her", "potato", "pot", "plant", "nope"}
+	values := []string{"house", "horse", "horses", "him", "his", "her", "potato", "pot", "plant", "nope", "a", "a_c", "a_b"}
 	sort.Strings(values)
 
 	var p trieNode
@@ -140,6 +140,11 @@ func TestComplete(t *testing.T) {
 			[]string{"house", "horse", "horses"},
 			[]string{""},
 		},
+		{
+			"sys",
+			[]string{"system_keyspaces", "system_tables", "system"},
+			[]string{"tem_keyspaces", "tem_tables", "tem"},
+		},
 	}
 
 	for _, test := range tests {
@@ -156,5 +161,44 @@ func TestComplete(t *testing.T) {
 				t.Fatalf("expected predictions %q got %q", test.result, result)
 			}
 		})
+	}
+}
+
+func TestPrefixCompleter_Contains_Missing(t *testing.T) {
+	var p trieNode
+	p.insert("a")
+	p.insert("a_b")
+	p.insert("a_c")
+	if p.contains("a_") {
+		t.Fatalf("should not contain %q", "a_")
+	}
+}
+
+func TestPrefixCompleter_CorrectInsert(t *testing.T) {
+	var p trieNode
+	p.insert("a_b")
+	p.insert("a_c")
+	p.insert("a")
+
+	if len(p.children) != 1 {
+		t.Fatalf("expected single child got %d", len(p.children))
+	}
+
+	child := p.children[0]
+	if child.prefix != "a" {
+		t.Fatalf("expected first node to be %q got %q", "a", child.prefix)
+	} else if len(child.children) != 2 {
+		t.Fatalf("a should have 2 child nodes got %d", len(child.children))
+	}
+
+	for _, node := range child.children {
+		if node.prefix != terminal {
+			child = node
+			break
+		}
+	}
+
+	if child.prefix != "_" {
+		t.Fatalf("child should have prefix %q got %q", "_", child.prefix)
 	}
 }
