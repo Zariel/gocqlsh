@@ -29,7 +29,7 @@ func New(db *gocql.Session, r *readline.Instance) *CQL {
 }
 
 func (c *CQL) err(err error) {
-	// TODO: imrpove error display
+	// TODO: improve error display
 	if _, err := fmt.Fprintf(c.r, "error: %v\n", aurora.Red(err)); err != nil {
 		panic(err)
 	}
