@@ -68,6 +68,10 @@ func TestLex(t *testing.T) {
 			ItemSemiColon,
 			[]string{";"},
 		},
+		{
+			ItemDot,
+			[]string{"."},
+		},
 	}
 
 	for _, test := range tests {
@@ -96,6 +100,7 @@ func TestLexScanToken(t *testing.T) {
 		{" ", []string{" ", ""}},
 		{`  "quoted"`, []string{"  ", `"quoted"`, ""}},
 		{"table(column, col2)", []string{"table", "(", "column", ",", " ", "col2", ")", ""}},
+		{"keyspace.table", []string{"keyspace", ".", "table", ""}},
 	}
 
 	for _, test := range tests {

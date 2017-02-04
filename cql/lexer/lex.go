@@ -21,10 +21,6 @@ func (i ItemType) String() string {
 		return "WS"
 	case ItemIdentifier:
 		return "IDENTIFIER"
-	case ItemFrom:
-		return "FROM"
-	case ItemAs:
-		return "AS"
 	case ItemInteger:
 		return "INTEGER"
 	case ItemFloat:
@@ -45,6 +41,8 @@ func (i ItemType) String() string {
 		return "BRACKET"
 	case ItemSemiColon:
 		return "SEMICOLON"
+	case ItemDot:
+		return "."
 	default:
 		return fmt.Sprintf("UNKOWN_ITEM_%d", i)
 	}
@@ -58,8 +56,6 @@ const (
 	ItemWhitespace
 	ItemIdentifier
 	ItemStar
-	ItemFrom
-	ItemAs // TODO remove this, it is a keyword
 
 	// Constants
 	ItemString
@@ -72,16 +68,7 @@ const (
 	ItemComma
 	ItemBracket
 	ItemSemiColon
-
-	text
-	number
-	colon
-
-	arrayStart
-	arrayEnd
-
-	objectStart
-	objectEnd
+	ItemDot
 )
 
 const eof = 0
@@ -247,6 +234,7 @@ func (l *Lexer) nextToken() string {
 		IN_QUOTE
 		IN_IDENT
 		IN_SPACE
+		IN_NUMBER
 	)
 
 	pos := l.start
@@ -266,6 +254,14 @@ loop:
 			if !unicode.IsSpace(r) {
 				break loop
 			}
+		case IN_NUMBER:
+			switch r {
+			case '.', 'e', 'E', '-', '+', 'x', 'X':
+			default:
+				if !(isDigit(r) || isHex(r)) {
+					break loop
+				}
+			}
 
 		case IN_QUOTE:
 			if r == quote {
@@ -280,7 +276,7 @@ loop:
 
 		case IN_IDENT:
 			switch r {
-			case '(', ')', ',':
+			case '(', ')', ',', '.':
 				break loop
 			}
 
@@ -290,15 +286,19 @@ loop:
 
 		case START:
 			switch r {
-			case '(', ')', ',':
+			case '(', ')', ',', '.':
 				pos++
 				break loop
 			case '"', '\'':
 				quote = r
 				st = IN_QUOTE
+			case '-':
+				st = IN_NUMBER
 			default:
 				if unicode.IsSpace(r) {
 					st = IN_SPACE
+				} else if isDigit(r) {
+					st = IN_NUMBER
 				} else {
 					st = IN_IDENT
 				}
@@ -331,6 +331,8 @@ func (l *Lexer) Item() Item {
 		return Item{ItemBracket, token}
 	} else if token == ";" {
 		return Item{ItemSemiColon, token}
+	} else if token == "." {
+		return Item{ItemDot, token}
 	}
 
 	ch, _ := utf8.DecodeRuneInString(token)
