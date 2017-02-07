@@ -69,6 +69,7 @@ const (
 	ItemBracket
 	ItemSemiColon
 	ItemDot
+	ItemQuestionMark
 )
 
 const eof = 0
@@ -195,23 +196,24 @@ func scanNumber(token string) Item {
 			}
 			pos++
 		}
+	}
 
-		if pos == len(token) {
-			return Item{ItemFloat, token}
-		}
+	if pos == len(token) {
+		return Item{typ, token}
+	}
 
-		if t := token[pos]; t == 'e' || t == 'E' {
+	if t := token[pos]; t == 'e' || t == 'E' {
+		typ = ItemFloat
+		pos++
+		// TODO: handle case where we dont lex here and above
+		if token[pos] == '-' || token[pos] == '+' {
 			pos++
-			// TODO: handle case where we dont lex here and above
-			if token[pos] == '-' || token[pos] == '+' {
-				pos++
+		}
+		for _, r := range token[pos:] {
+			if !isDigit(r) {
+				break
 			}
-			for _, r := range token[pos:] {
-				if !isDigit(r) {
-					break
-				}
-				pos++
-			}
+			pos++
 		}
 	}
 
@@ -333,6 +335,8 @@ func (l *Lexer) Item() Item {
 		return Item{ItemSemiColon, token}
 	} else if token == "." {
 		return Item{ItemDot, token}
+	} else if token == "?" {
+		return Item{ItemQuestionMark, "?"}
 	}
 
 	ch, _ := utf8.DecodeRuneInString(token)

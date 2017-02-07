@@ -101,6 +101,7 @@ func TestLexScanToken(t *testing.T) {
 		{`  "quoted"`, []string{"  ", `"quoted"`, ""}},
 		{"table(column, col2)", []string{"table", "(", "column", ",", " ", "col2", ")", ""}},
 		{"keyspace.table", []string{"keyspace", ".", "table", ""}},
+		{"?", []string{"?", ""}},
 	}
 
 	for _, test := range tests {
@@ -121,4 +122,49 @@ func TestLexScanToken(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLexItems(t *testing.T) {
+	space := Item{ItemWhitespace, " "}
+	tests := [...]struct {
+		in  string
+		exp []Item
+	}{
+		{
+			"someKeyspace.someTable", []Item{
+				{ItemIdentifier, "someKeyspace"},
+				{ItemDot, "."},
+				{ItemIdentifier, "someTable"},
+			},
+		},
+		{
+			"1234123 -123432 1e+2", []Item{
+				{ItemInteger, "1234123"},
+				space,
+				{ItemInteger, "-123432"},
+				space,
+				{ItemFloat, "1e+2"},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.in, func(t *testing.T) {
+			l := Lex(test.in)
+			var tokens []Item
+
+			for {
+				token := l.Item()
+				if token.Typ == ItemEOF {
+					break
+				}
+				tokens = append(tokens, token)
+			}
+
+			if !reflect.DeepEqual(test.exp, tokens) {
+				t.Fatalf("expected %q got %q", test.exp, tokens)
+			}
+		})
+	}
+
 }
