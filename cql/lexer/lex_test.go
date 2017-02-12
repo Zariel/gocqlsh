@@ -34,7 +34,7 @@ func TestLex(t *testing.T) {
 		},
 		{
 			ItemFloat,
-			[]string{"1.0", "-1.0", "31.231E-1212", "31.231e+1212", "nan", "INFINITY"},
+			[]string{"1.0", "-1.0", "31.231E-1212", "31.231e+1212", "nan", "INFINITY", "1e+2", "1e-2"},
 		},
 		{
 			ItemBoolean,
@@ -144,6 +144,16 @@ func TestLexItems(t *testing.T) {
 				{ItemInteger, "-123432"},
 				space,
 				{ItemFloat, "1e+2"},
+			},
+		},
+		{
+			"(?, ?)", []Item{
+				{ItemBracket, "("},
+				{ItemQuestionMark, "?"},
+				{ItemComma, ","},
+				space,
+				{ItemQuestionMark, "?"},
+				{ItemBracket, ")"},
 			},
 		},
 	}

@@ -34,7 +34,7 @@ func (i ItemType) String() string {
 	case ItemBlob:
 		return "BLOB"
 	case ItemStar:
-		return "*"
+		return "STAR"
 	case ItemComma:
 		return "COMMA"
 	case ItemBracket:
@@ -42,7 +42,11 @@ func (i ItemType) String() string {
 	case ItemSemiColon:
 		return "SEMICOLON"
 	case ItemDot:
-		return "."
+		return "DOT"
+	case ItemQuestionMark:
+		return "QMARK"
+	case ItemColon:
+		return "COLON"
 	default:
 		return fmt.Sprintf("UNKOWN_ITEM_%d", i)
 	}
@@ -70,6 +74,8 @@ const (
 	ItemSemiColon
 	ItemDot
 	ItemQuestionMark
+	ItemColon
+	// TODO: lex comments
 )
 
 const eof = 0
@@ -80,7 +86,7 @@ type Item struct {
 }
 
 func (i Item) String() string {
-	return fmt.Sprintf("%v (%q)", i.Typ, i.Val)
+	return fmt.Sprintf("[%v %q]", i.Typ, i.Val)
 }
 
 type Lexer struct {
@@ -336,7 +342,9 @@ func (l *Lexer) Item() Item {
 	} else if token == "." {
 		return Item{ItemDot, token}
 	} else if token == "?" {
-		return Item{ItemQuestionMark, "?"}
+		return Item{ItemQuestionMark, token}
+	} else if token == ":" {
+		return Item{ItemColon, token}
 	}
 
 	ch, _ := utf8.DecodeRuneInString(token)
